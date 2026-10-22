@@ -24,6 +24,7 @@ OUT = "shivansh-ascii.svg"
 
 COLS, ROWS = 100, 53
 RAMP = " .`:-=+*cs#%@"  # bright (sparse) -> dark (dense)
+GAMMA = 1.0  # tonal lift is baked into prep_photo.py; keep mapping linear
 FILL = "#c9d1d9"        # monochrome light-gray fill
 FILL_LIGHT = "#24292f"  # light-mode override
 CURSOR_FILL = "#58a6ff"
@@ -47,6 +48,8 @@ def to_ascii_rows() -> list:
         chars = []
         for x in range(COLS):
             b = px[x, y]
+            # gamma lift before ramp mapping
+            b = int(255 * ((b / 255) ** (1 / GAMMA)))
             idx = int(round((255 - b) / 255 * n))
             chars.append(RAMP[idx])
         # keep full COLS width (no rstrip): textLength below force-fits every
