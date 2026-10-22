@@ -117,12 +117,12 @@ def build(s):
     ch = 92
     gap = 12
     cards = [
-        ("current streak", str(s["cur_streak"]), f'{s["cur_streak"]} day{"s" if s["cur_streak"]!=1 else ""}' + f' · {s["cur_range"]}', GREEN),
-        ("longest streak", str(s["long_streak"]), f'{s["long_streak"]} days · {s["long_range"]}', BRIGHT),
-        ("contributions", f'{s["total"]:,}', "in the last year", BRIGHT),
-        ("active days", str(s["active_days"]), f'{s["active_days"]} / {s["total_days"]} · {round(s["active_days"]/s["total_days"]*100)}% of the year', BRIGHT),
-        ("best day", str(s["best_count"]), s["best_date"], BRIGHT),
-        ("avg / active day", str(s["avg"]), "contributions", BRIGHT),
+        ("current streak", str(s["cur_streak"]), f'{s["cur_streak"]} day{"s" if s["cur_streak"]!=1 else ""}' + f' · {s["cur_range"]}', "#3fb950"),
+        ("longest streak", str(s["long_streak"]), f'{s["long_streak"]} days · {s["long_range"]}', "#d2a8ff"),
+        ("contributions", f'{s["total"]:,}', "in the last year", "#79c0ff"),
+        ("active days", str(s["active_days"]), f'{s["active_days"]} / {s["total_days"]} · {round(s["active_days"]/s["total_days"]*100)}% of the year', "#ffa657"),
+        ("best day", str(s["best_count"]), s["best_date"], "#ff7b72"),
+        ("avg / active day", str(s["avg"]), "contributions", "#56d4dd"),
     ]
     for i, (label, val, sub, col) in enumerate(cards):
         x = pad + (i % 2) * (cw + gap)
