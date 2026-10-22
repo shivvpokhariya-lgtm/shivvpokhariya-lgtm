@@ -1,0 +1,9 @@
+requests==2.32.3
+beautifulsoup4==4.12.3
+
+# Portrait-only deps — run locally when you change your photo.
+# NOT needed by the daily GitHub Actions workflow (heatmap only):
+pillow
+numpy
+opencv-python
+rembg
