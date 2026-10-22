@@ -19,11 +19,6 @@ from xml.sax.saxutils import escape
 SRC = "data/contributions.json"
 OUT = "contrib-heatmap.svg"
 
-# Show only the recent stretch (Shivansh's call, 2026-10-23): the full-year
-# view was 8 empty months plus a busy tail. July 2026 -> today.
-START_DATE = "2026-07-01"
-START_LABEL = "Jul 2026"
-
 # none -> brightest (level 5 is a neon top end)
 PALETTE = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353", "#69f0a0"]
 
@@ -32,7 +27,7 @@ GAP = 3
 PITCH = CELL + GAP
 TOP = 22     # room for month labels
 LEFT = 2
-FOOTER_H = 52   # stats line + legend line
+FOOTER_H = 30
 RX = 2.5
 DIAG_STEP = 0.022  # seconds per diagonal — the reveal sweep
 DROP_DUR = 0.45
@@ -47,9 +42,9 @@ MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 def main() -> None:
     with open(SRC, encoding="utf-8") as f:
         data = json.load(f)
-    days = [d for d in data["days"] if d["date"] >= START_DATE]
+    days = data["days"]
     if not days:
-        raise SystemExit("no days in " + SRC + " on/after " + START_DATE)
+        raise SystemExit("no days in " + SRC)
 
     # Group into week columns; columns start on Sunday like GitHub's.
     first = date.fromisoformat(days[0]["date"])
@@ -118,28 +113,27 @@ def main() -> None:
             )
             cell_count += 1
 
-    # footer: stats on one line, Less->More legend on the next (the July+
-    # view is narrow, so a single line would collide)
+    # footer: stats left, Less->More legend right
     fy = TOP + grid_h + 20
-    total = sum(d.get("count", 0) for d in days)
+    total = data.get("total", 0)
     p.append(
         f'<text class="lbl" x="{LEFT}" y="{fy}" font-family="{FONT_STACK}" '
         f'font-size="11" fill="{LABEL_FILL}">'
-        f'{total:,} contributions since {START_LABEL}</text>'
+        f'{total:,} contributions in the last year</text>'
     )
-    ly = fy + 18
+    lx = w - LEFT - 5 * (CELL + 2) - 62
     p.append(
-        f'<text class="lbl" x="{LEFT}" y="{ly}" font-family="{FONT_STACK}" '
+        f'<text class="lbl" x="{lx}" y="{fy}" font-family="{FONT_STACK}" '
         f'font-size="11" fill="{LABEL_FILL}">Less</text>'
     )
-    sx = LEFT + 34
+    sx = lx + 34
     for i in range(1, 6):
         p.append(
-            f'<rect x="{sx + (i - 1) * (CELL + 2)}" y="{ly - 9}" '
+            f'<rect x="{sx + (i - 1) * (CELL + 2)}" y="{fy - 9}" '
             f'width="{CELL}" height="{CELL}" rx="{RX}" fill="{PALETTE[i]}"/>'
         )
     p.append(
-        f'<text class="lbl" x="{sx + 5 * (CELL + 2) + 6}" y="{ly}" '
+        f'<text class="lbl" x="{sx + 5 * (CELL + 2) + 6}" y="{fy}" '
         f'font-family="{FONT_STACK}" font-size="11" fill="{LABEL_FILL}">More</text>'
     )
 
