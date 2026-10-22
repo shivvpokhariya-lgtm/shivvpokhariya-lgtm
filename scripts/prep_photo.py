@@ -52,8 +52,12 @@ def main() -> None:
     white = Image.new("RGBA", boosted_img.size, (255, 255, 255, 255))
     composited = Image.alpha_composite(white, boosted_img)
 
-    # 4. grayscale
+    # 4. grayscale, then a brightness/contrast lift so dimly-lit faces
+    # separate cleanly from hair in the ASCII ramp
+    from PIL import ImageEnhance
     gray = composited.convert("L")
+    gray = ImageEnhance.Brightness(gray).enhance(1.18)
+    gray = ImageEnhance.Contrast(gray).enhance(1.35)
     gray.save(OUT)
     print(f"wrote {OUT} ({gray.size[0]}x{gray.size[1]})")
 
