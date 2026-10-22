@@ -22,7 +22,9 @@ from PIL import Image
 SRC = "source-prepped.png"
 OUT = "shivansh-portrait.svg"  # renamed 2026-10-23 to bust GitHub camo cache
 
-COLS, ROWS = 120, 60  # high-res like Avi's: detailed enough to read the face
+COLS = 120  # ROWS auto-calculated from image aspect + cell aspect (no squish)
+CELL_W = 6.6   # ~0.6em monospace advance at FONT_SIZE
+CELL_H = 13.0
 RAMP = " .`:-=+*cs#%@"  # bright (sparse) -> dark (dense)
 GAMMA = 1.0  # tonal lift is baked into prep_photo.py; keep mapping linear
 FILL = "#c9d1d9"        # monochrome light-gray fill
@@ -31,20 +33,27 @@ CURSOR_FILL = "#58a6ff"
 CURSOR_FILL_LIGHT = "#0969da"
 
 FONT_SIZE = 11
-CELL_W = 6.6   # ~0.6em monospace advance at FONT_SIZE
-CELL_H = 13.0
 ROW_DUR = 0.9      # seconds per row wipe
 ROW_STAGGER = 0.06  # seconds between row starts
 
 FONT_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
 
 
+def get_rows() -> int:
+    """Calculate ROWS so the ASCII isn't vertically squished."""
+    img = Image.open(SRC)
+    iw, ih = img.size
+    # rows = cols * (img_h/img_w) * (cell_w/cell_h)
+    return round(COLS * (ih / iw) * (CELL_W / CELL_H))
+
+
 def to_ascii_rows() -> list:
-    img = Image.open(SRC).convert("L").resize((COLS, ROWS), Image.LANCZOS)
+    rows_n = get_rows()
+    img = Image.open(SRC).convert("L").resize((COLS, rows_n), Image.LANCZOS)
     px = img.load()
     n = len(RAMP) - 1
     rows = []
-    for y in range(ROWS):
+    for y in range(rows_n):
         chars = []
         for x in range(COLS):
             b = px[x, y]
