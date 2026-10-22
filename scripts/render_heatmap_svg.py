@@ -94,7 +94,9 @@ def main() -> None:
             )
 
     # day cells — diagonal reveal: delay grows with (week + row)
+    # (plays once on load; the shine sweep below runs forever)
     cell_count = 0
+    cell_rects = []
     for wi in range(n_weeks):
         for row in range(7):
             d = weeks.get(wi, {}).get(row)
@@ -111,7 +113,38 @@ def main() -> None:
                 f'rx="{RX}" fill="{fill}" style="animation-delay:{delay:.2f}s">'
                 f"<title>{escape(title)}</title></rect>"
             )
+            cell_rects.append((x, y))
             cell_count += 1
+
+    # continuous soft shine sweep over the cells (runs forever, gentle):
+    # a translucent white band glides left->right every few seconds,
+    # clipped so it only ever lights the cells themselves.
+    # NOTE: the band moves via <animate> on the rect's x (NOT animateTransform:
+    # Chrome drops clipped content when a clip-path meets a SMIL transform).
+    p.append('<clipPath id="cellclip">')
+    for (x, y) in cell_rects:
+        p.append(f'<rect x="{x}" y="{y}" width="{CELL}" height="{CELL}" rx="{RX}"/>')
+    p.append('</clipPath>')
+    p.append(
+        '<linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">'
+        '<stop offset="0" stop-color="#ffffff" stop-opacity="0"/>'
+        '<stop offset="0.5" stop-color="#ffffff" stop-opacity="0.30"/>'
+        '<stop offset="1" stop-color="#ffffff" stop-opacity="0"/>'
+        '</linearGradient>'
+    )
+    shine_w = 260
+    sweep_from = -shine_w
+    sweep_to = grid_w + 100
+    p.append('<g clip-path="url(#cellclip)" pointer-events="none">')
+    p.append(
+        f'<rect x="{sweep_from}" y="{TOP}" width="{shine_w}" height="{grid_h}" '
+        f'fill="url(#shine)">'
+        f'<animate attributeName="x" values="{sweep_from}; {sweep_to}; {sweep_to}" '
+        f'keyTimes="0; 0.38; 1" dur="6.5s" begin="1.6s" '
+        f'repeatCount="indefinite"/>'
+        f'</rect>'
+    )
+    p.append('</g>')
 
     # footer: stats left, Less->More legend right
     fy = TOP + grid_h + 20
