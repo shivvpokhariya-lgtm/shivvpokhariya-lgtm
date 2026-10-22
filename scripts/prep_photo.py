@@ -58,10 +58,9 @@ def main() -> None:
     # with only features/hair in dark tones.
     from PIL import ImageEnhance
     gray = composited.convert("L")
-    # Reference style: face near-white/empty, hair dense, features outlined.
-    # Aggressive lift pushes face skin to white while hair stays black.
-    gray = ImageEnhance.Brightness(gray).enhance(2.1)
-    gray = ImageEnhance.Contrast(gray).enhance(1.9)
+    # Moderate lift for well-lit photos; keeps face readable without washing out
+    gray = ImageEnhance.Brightness(gray).enhance(1.25)
+    gray = ImageEnhance.Contrast(gray).enhance(1.4)
     gray.save(OUT)
     print(f"wrote {OUT} ({gray.size[0]}x{gray.size[1]})")
 
