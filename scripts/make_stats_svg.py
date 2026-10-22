@@ -81,7 +81,7 @@ def load_stats():
     return {
         "total": total,
         "active_days": len(active),
-        "total_days": len(days),
+        "total_days": 365,  # a year, not the 369-day calendar range
         "best_count": best["count"],
         "best_date": datetime.fromisoformat(best["date"]).strftime("%b %d"),
         "cur_streak": cur_streak,
