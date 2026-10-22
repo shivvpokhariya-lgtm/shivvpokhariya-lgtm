@@ -52,6 +52,10 @@ def to_ascii_rows() -> list:
     img = Image.open(SRC).convert("L").resize((COLS, rows_n), Image.LANCZOS)
     px = img.load()
     n = len(RAMP) - 1
+    # Face region (rows 20-38, cols 35-85 in 120x74 grid) -> empty like reference
+    # Tighter vertical to avoid hair; skin is bright, features stay
+    FACE_TOP, FACE_BOTTOM = int(rows_n * 0.27), int(rows_n * 0.51)
+    FACE_LEFT, FACE_RIGHT = int(COLS * 0.29), int(COLS * 0.71)
     rows = []
     for y in range(rows_n):
         chars = []
@@ -59,7 +63,12 @@ def to_ascii_rows() -> list:
             b = px[x, y]
             # gamma lift before ramp mapping
             b = int(255 * ((b / 255) ** (1 / GAMMA)))
-            idx = int(round((255 - b) / 255 * n))
+            # In face region: bright skin -> empty (reference style)
+            if (FACE_TOP <= y <= FACE_BOTTOM and FACE_LEFT <= x <= FACE_RIGHT
+                    and b > 205):
+                idx = 0
+            else:
+                idx = int(round((255 - b) / 255 * n))
             chars.append(RAMP[idx])
         # keep full COLS width (no rstrip): textLength below force-fits every
         # row to the viewBox, so rendering never overflows on wide fonts
