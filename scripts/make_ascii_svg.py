@@ -64,8 +64,9 @@ def to_ascii_rows() -> list:
             # gamma lift before ramp mapping
             b = int(255 * ((b / 255) ** (1 / GAMMA)))
             # In face region: bright skin -> empty (reference style)
+            # Skin ~140, features ~50-100, so threshold at 110 keeps features
             if (FACE_TOP <= y <= FACE_BOTTOM and FACE_LEFT <= x <= FACE_RIGHT
-                    and b > 205):
+                    and b > 110):
                 idx = 0
             else:
                 idx = int(round((255 - b) / 255 * n))
