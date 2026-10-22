@@ -20,7 +20,7 @@ from xml.sax.saxutils import escape
 from PIL import Image
 
 SRC = "source-prepped.png"
-OUT = "shivansh-ascii.svg"
+OUT = "shivansh-portrait.svg"  # renamed 2026-10-23 to bust GitHub camo cache
 
 COLS, ROWS = 100, 53
 RAMP = " .`:-=+*cs#%@"  # bright (sparse) -> dark (dense)
@@ -58,9 +58,23 @@ def to_ascii_rows() -> list:
     return rows
 
 
+def trim_empty_rows(rows: list) -> list:
+    """Drop leading/trailing all-whitespace rows so the portrait sits at the
+    top of its box instead of floating low with empty space above."""
+    start = 0
+    while start < len(rows) and not rows[start].strip():
+        start += 1
+    end = len(rows)
+    while end > start and not rows[end - 1].strip():
+        end -= 1
+    return rows[start:end]
+
+
 def build_svg(rows: list) -> str:
+    rows = trim_empty_rows(rows)
+    nrows = len(rows)
     w = COLS * CELL_W
-    h = ROWS * CELL_H
+    h = nrows * CELL_H
     baseline = FONT_SIZE * 0.82
 
     parts = []
@@ -117,8 +131,9 @@ def main() -> None:
     svg = build_svg(rows)
     with open(OUT, "w", encoding="utf-8") as f:
         f.write(svg)
-    total_s = (ROWS - 1) * ROW_STAGGER + ROW_DUR
-    print(f"wrote {OUT} ({COLS}x{ROWS} grid, animation ~{total_s:.1f}s)")
+    trimmed = len(trim_empty_rows(rows))
+    total_s = (trimmed - 1) * ROW_STAGGER + ROW_DUR
+    print(f"wrote {OUT} ({COLS}x{trimmed} grid, animation ~{total_s:.1f}s)")
 
 
 if __name__ == "__main__":
