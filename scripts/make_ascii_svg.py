@@ -49,7 +49,9 @@ def to_ascii_rows() -> list:
             b = px[x, y]
             idx = int(round((255 - b) / 255 * n))
             chars.append(RAMP[idx])
-        rows.append("".join(chars).rstrip())
+        # keep full COLS width (no rstrip): textLength below force-fits every
+        # row to the viewBox, so rendering never overflows on wide fonts
+        rows.append("".join(chars))
     return rows
 
 
@@ -88,6 +90,7 @@ def build_svg(rows: list) -> str:
             f'<g clip-path="url(#{clip_id})">'
             f'<text class="art" x="0" y="{y + baseline:.1f}" '
             f'font-family="{FONT_STACK}" font-size="{FONT_SIZE}" fill="{FILL}" '
+            f'textLength="{w:.1f}" lengthAdjust="spacingAndGlyphs" '
             f'xml:space="preserve">{escape(row)}</text></g>'
         )
         # Cursor block rides the wipe edge, then fades as its row completes.
