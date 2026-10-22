@@ -22,7 +22,7 @@ from PIL import Image
 SRC = "source-prepped.png"
 OUT = "shivansh-portrait.svg"  # renamed 2026-10-23 to bust GitHub camo cache
 
-COLS, ROWS = 100, 53
+COLS, ROWS = 120, 60  # high-res like Avi's: detailed enough to read the face
 RAMP = " .`:-=+*cs#%@"  # bright (sparse) -> dark (dense)
 GAMMA = 1.0  # tonal lift is baked into prep_photo.py; keep mapping linear
 FILL = "#c9d1d9"        # monochrome light-gray fill
