@@ -10,7 +10,7 @@
 
 <table>
 <tr>
-  <td valign="top"><img src="./shivansh-portrait.svg" width="460" /></td>
+  <td valign="middle" align="center"><img src="./shivansh-portrait.svg" width="460" /></td>
   <td valign="top"><img src="./stats.svg" width="460" /></td>
 </tr>
 </table>
