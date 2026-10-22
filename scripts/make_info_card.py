@@ -36,7 +36,8 @@ def main() -> None:
         cfg = json.load(f)
     rows = cfg["rows"]
 
-    h = TITLE_H + len(rows) * ROW_H + PAD
+    extra_lines = sum(len(r["value"].split("\n")) - 1 for r in rows)
+    h = TITLE_H + len(rows) * ROW_H + PAD + extra_lines * ROW_H
 
     p = []
     p.append(
@@ -85,13 +86,24 @@ def main() -> None:
     y += ROW_H
     for i, row in enumerate(rows):
         key = escape(row["key"])
-        val = escape(row["value"])
         color = row.get("color", VALUE_FILL)
-        inner = (f'<tspan fill="{color}" font-weight="bold">{key}</tspan>'
-                 f'<tspan fill="{DIM_FILL}">: </tspan>'
-                 f'<tspan fill="{VALUE_FILL}">{val}</tspan>')
+        vfill = row.get("value_color", VALUE_FILL)
+        italic = ' font-style="italic"' if row.get("italic") else ''
+        # multi-line values: "\n" in value wraps with hanging indent
+        parts = row["value"].split("\n")
+        val_x = PAD + (len(row["key"]) + 2) * FONT * 0.6
+        if row.get("comment"):
+            inner = (f'<tspan fill="{color}" font-weight="bold">{key}</tspan>'
+                     f'<tspan fill="{vfill}"{italic}> {escape(parts[0])}</tspan>')
+        else:
+            inner = (f'<tspan fill="{color}" font-weight="bold">{key}</tspan>'
+                     f'<tspan fill="{DIM_FILL}">: </tspan>'
+                     f'<tspan fill="{vfill}"{italic}>{escape(parts[0])}</tspan>')
+        for extra in parts[1:]:
+            inner += (f'<tspan x="{val_x:.0f}" dy="{ROW_H}" '
+                      f'fill="{vfill}"{italic}>{escape(extra)}</tspan>')
         line(inner, y, begin + step * (i + 1))
-        y += ROW_H
+        y += ROW_H * len(parts)
 
     p.append("</svg>")
     with open(OUT, "w", encoding="utf-8") as f:
