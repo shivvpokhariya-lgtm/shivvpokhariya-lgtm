@@ -53,11 +53,15 @@ def main() -> None:
     composited = Image.alpha_composite(white, boosted_img)
 
     # 4. grayscale, then a brightness/contrast lift so dimly-lit faces
-    # separate cleanly from hair in the ASCII ramp
+    # separate cleanly from hair in the ASCII ramp.
+    # Face should be near-white (empty in ASCII) like the reference,
+    # with only features/hair in dark tones.
     from PIL import ImageEnhance
     gray = composited.convert("L")
-    gray = ImageEnhance.Brightness(gray).enhance(1.18)
-    gray = ImageEnhance.Contrast(gray).enhance(1.35)
+    # Reference style: face near-white/empty, hair dense, features outlined.
+    # Aggressive lift pushes face skin to white while hair stays black.
+    gray = ImageEnhance.Brightness(gray).enhance(2.1)
+    gray = ImageEnhance.Contrast(gray).enhance(1.9)
     gray.save(OUT)
     print(f"wrote {OUT} ({gray.size[0]}x{gray.size[1]})")
 
