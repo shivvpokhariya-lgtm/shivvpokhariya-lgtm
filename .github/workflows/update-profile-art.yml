@@ -25,8 +25,11 @@ jobs:
       - run: python scripts/fetch_contributions.py
 
       - run: python scripts/render_heatmap_svg.py
+      - run: python scripts/make_stats_svg.py
+
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: refresh contribution graph [skip ci]"
-          file_pattern: "data/contributions.json contrib-heatmap.svg"
+          file_pattern: "data/contributions.json contrib-heatmap.svg stats.svg"
+
