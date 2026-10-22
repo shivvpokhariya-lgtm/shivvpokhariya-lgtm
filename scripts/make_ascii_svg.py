@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Convert the prepped photo into a self-typing monochrome ASCII SVG.
+
+Reads source-prepped.png (from prep_photo.py), downsamples it to a
+~100x53 character grid, and maps each pixel's brightness through a
+density ramp (sparse glyphs for bright areas, dense glyphs for dark).
+
+Animation: every row is wrapped in a horizontal clip that wipes
+left-to-right, with a small block "cursor" riding the wipe edge,
+staggered top-to-bottom. SMIL, plays ONCE, then freezes
+(fill="freeze", no repeat) — GitHub plays this inside <img> SVGs.
+
+Writes shivansh-ascii.svg
+
+Usage:
+    python scripts/make_ascii_svg.py
+"""
+from xml.sax.saxutils import escape
+
+from PIL import Image
+
+SRC = "source-prepped.png"
+OUT = "shivansh-ascii.svg"
+
+COLS, ROWS = 100, 53
+RAMP = " .`:-=+*cs#%@"  # bright (sparse) -> dark (dense)
+FILL = "#c9d1d9"        # monochrome light-gray fill
+FILL_LIGHT = "#24292f"  # light-mode override
+CURSOR_FILL = "#58a6ff"
+CURSOR_FILL_LIGHT = "#0969da"
+
+FONT_SIZE = 11
+CELL_W = 6.6   # ~0.6em monospace advance at FONT_SIZE
+CELL_H = 13.0
+ROW_DUR = 0.9      # seconds per row wipe
+ROW_STAGGER = 0.06  # seconds between row starts
+
+FONT_STACK = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+
+
+def to_ascii_rows() -> list:
+    img = Image.open(SRC).convert("L").resize((COLS, ROWS), Image.LANCZOS)
+    px = img.load()
+    n = len(RAMP) - 1
+    rows = []
+    for y in range(ROWS):
+        chars = []
+        for x in range(COLS):
+            b = px[x, y]
+            idx = int(round((255 - b) / 255 * n))
+            chars.append(RAMP[idx])
+        rows.append("".join(chars).rstrip())
+    return rows
+
+
+def build_svg(rows: list) -> str:
+    w = COLS * CELL_W
+    h = ROWS * CELL_H
+    baseline = FONT_SIZE * 0.82
+
+    parts = []
+    parts.append(
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{w:.0f}" height="{h:.0f}" '
+        f'viewBox="0 0 {w:.1f} {h:.1f}" role="img" aria-label="ASCII portrait">'
+    )
+    # Light-mode adaptation (SVG-as-<img> still honors prefers-color-scheme).
+    parts.append(
+        "<style>"
+        f"@media (prefers-color-scheme: light) {{ .art {{ fill: {FILL_LIGHT}; }} "
+        f".cur {{ fill: {CURSOR_FILL_LIGHT}; }} }}"
+        "</style>"
+    )
+
+    for r, row in enumerate(rows):
+        begin = r * ROW_STAGGER
+        y = r * CELL_H
+        clip_id = f"rowclip{r}"
+
+        # Row wipe: clip rect grows 0 -> full width, staggered per row.
+        parts.append(
+            f'<clipPath id="{clip_id}">'
+            f'<rect x="0" y="{y:.1f}" width="0" height="{CELL_H:.1f}">'
+            f'<animate attributeName="width" from="0" to="{w:.1f}" '
+            f'dur="{ROW_DUR}s" begin="{begin:.2f}s" fill="freeze"/>'
+            f"</rect></clipPath>"
+        )
+        parts.append(
+            f'<g clip-path="url(#{clip_id})">'
+            f'<text class="art" x="0" y="{y + baseline:.1f}" '
+            f'font-family="{FONT_STACK}" font-size="{FONT_SIZE}" fill="{FILL}" '
+            f'xml:space="preserve">{escape(row)}</text></g>'
+        )
+        # Cursor block rides the wipe edge, then fades as its row completes.
+        parts.append(
+            f'<rect class="cur" x="0" y="{y:.1f}" width="{CELL_W:.1f}" '
+            f'height="{CELL_H:.1f}" fill="{CURSOR_FILL}">'
+            f'<animate attributeName="x" from="0" to="{w:.1f}" '
+            f'dur="{ROW_DUR}s" begin="{begin:.2f}s" fill="freeze"/>'
+            f'<animate attributeName="opacity" values="1;1;0" '
+            f'keyTimes="0;0.97;1" dur="{ROW_DUR}s" begin="{begin:.2f}s" '
+            f'fill="freeze"/>'
+            f"</rect>"
+        )
+
+    parts.append("</svg>")
+    return "\n".join(parts)
+
+
+def main() -> None:
+    rows = to_ascii_rows()
+    svg = build_svg(rows)
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write(svg)
+    total_s = (ROWS - 1) * ROW_STAGGER + ROW_DUR
+    print(f"wrote {OUT} ({COLS}x{ROWS} grid, animation ~{total_s:.1f}s)")
+
+
+if __name__ == "__main__":
+    main()
