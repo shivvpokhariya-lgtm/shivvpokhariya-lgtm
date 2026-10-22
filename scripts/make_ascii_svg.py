@@ -59,11 +59,7 @@ def to_ascii_rows() -> list:
             b = px[x, y]
             # gamma lift before ramp mapping
             b = int(255 * ((b / 255) ** (1 / GAMMA)))
-            # hard threshold: bright face -> empty (like reference)
-            if b > 195:
-                idx = 0
-            else:
-                idx = int(round((255 - b) / 255 * n))
+            idx = int(round((255 - b) / 255 * n))
             chars.append(RAMP[idx])
         # keep full COLS width (no rstrip): textLength below force-fits every
         # row to the viewBox, so rendering never overflows on wide fonts
