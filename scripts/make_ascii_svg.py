@@ -56,6 +56,9 @@ def to_ascii_rows() -> list:
     # Tighter vertical to avoid hair; skin is bright, features stay
     FACE_TOP, FACE_BOTTOM = int(rows_n * 0.27), int(rows_n * 0.51)
     FACE_LEFT, FACE_RIGHT = int(COLS * 0.29), int(COLS * 0.71)
+    # Glasses region: exclude from emptying so frames are constructed with dots
+    GLASS_TOP, GLASS_BOTTOM = int(rows_n * 0.34), int(rows_n * 0.37)
+    GLASS_LEFT, GLASS_RIGHT = int(COLS * 0.33), int(COLS * 0.67)
     rows = []
     for y in range(rows_n):
         chars = []
@@ -63,10 +66,11 @@ def to_ascii_rows() -> list:
             b = px[x, y]
             # gamma lift before ramp mapping
             b = int(255 * ((b / 255) ** (1 / GAMMA)))
-            # In face region: bright skin -> empty (reference style)
+            in_face = (FACE_TOP <= y <= FACE_BOTTOM and FACE_LEFT <= x <= FACE_RIGHT)
+            in_glasses = (GLASS_TOP <= y <= GLASS_BOTTOM and GLASS_LEFT <= x <= GLASS_RIGHT)
+            # In face region (but NOT glasses): bright skin -> empty (reference style)
             # Skin ~140, features ~50-100, so threshold at 110 keeps features
-            if (FACE_TOP <= y <= FACE_BOTTOM and FACE_LEFT <= x <= FACE_RIGHT
-                    and b > 110):
+            if in_face and not in_glasses and b > 110:
                 idx = 0
             else:
                 idx = int(round((255 - b) / 255 * n))
