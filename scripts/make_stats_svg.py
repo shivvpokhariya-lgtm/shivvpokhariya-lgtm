@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 DATA = "data/contributions.json"
-OUT = "stats.svg"
+OUT = "stats-panel.svg"
 
 W, H = 460, 560
 BG = "#0d1117"
