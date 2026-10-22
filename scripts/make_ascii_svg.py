@@ -20,7 +20,7 @@ from xml.sax.saxutils import escape
 from PIL import Image
 
 SRC = "source-prepped.png"
-OUT = "shivansh-portrait.svg"  # renamed 2026-10-23 to bust GitHub camo cache
+OUT = "portrait.svg"  # renamed 2026-10-23 to bust GitHub camo cache
 
 COLS = 120  # ROWS auto-calculated from image aspect + cell aspect (no squish)
 CELL_W = 6.6   # ~0.6em monospace advance at FONT_SIZE
